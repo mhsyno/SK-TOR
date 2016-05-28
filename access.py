@@ -1,10 +1,27 @@
 import json
 from random import randint
 import socket
+import multiprocessing
+import argparse
 
-nodes = {0: ["192.168.1.12", 5005], 1: ["192.168.1.17", 5005]} #adresy go here
+parser = argparse.ArgumentParser(description='Lorem ipsum!')
+parser.add_argument('current_node_ID', type=int, nargs='+',
+                    help="this node's ID")
+args = parser.parse_args()
+current_node_ID,  = args.current_node_ID
+
+
+nodes = {0: ("192.168.1.12", 8005),
+         1: ("192.168.1.17", 5005),
+         2: ("192.168.1.12", 8002),
+         }
 # nodes.pop(nodes[socket.get]) #zastanowic sie czy warto usuwac biezacy node z listy nodes powyzej
 # czy to czasami nie wymaga zmodyfikowania prep_trajectory zeby bralo jedynie elementy z nodes.keys
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(nodes[current_node_ID])
+print("Listening on {}".format(nodes[current_node_ID]))
+
 N = len(nodes)
 n = 3
 ACKNOWLEDGED = "HADHGFHGFHSETYRSHTDHGSUDGHGUHSEYGHERGAHGEAT"
@@ -21,12 +38,12 @@ def prep_trajectory(n):
             trajectory[i] = randint(0,N-1)
     return trajectory
 
-def encode_trajectory(trajectory, message):
+def encode_trajectory(trajectory, message, target, sender):
     """ takes trajectory list (use prep_trajectory) and string message
 
     returns trajectory and message as nested list in JSON string form
     """
-    lista = message # string, ale ok
+    lista = [sender, message] #OSTATNI MUSI ZAWIERAĆ ADRES DOCELOWEGO ODBIORCY
     n = len(trajectory)
     for i in range(n):
         lista = [trajectory[n-1-i], lista]
@@ -36,9 +53,18 @@ def send(ip, string_message):
     """TODO: socket"""
     pass
 def receive():
-    """TODO: socket"""
-    encoded_list = ""
-    origin_ip = ["192.168.1.12", 5005] #from socket
+    connection, address = s.accept()
+    print("Accepted connection from {}".format(address))
+    print(5*"=")
+    while 1:
+        data = connection.recv(1000)
+        if not data: break
+        print(str(data, 'utf-8'))
+        connection.sendall(data)
+    connection.close()
+    print(5*"=")
+    encoded_list = "ENCODED_LIST_GOES_HERE"
+    origin_ip = address #from socket
     return encoded_list, origin_ip
 
 def pass_along(encoded_list):
@@ -68,6 +94,6 @@ def pass_along(encoded_list):
         send(origin_ip, ACKNOWLEDGED)
         #commit seppuku
 if __name__ == "__main__":
-    # for i in range(20):
-    #     print(encode_trajectory(prep_trajectory(n), "koczkodan"))
-    pass
+    s.listen(1)
+    print(receive())
+    s.close()
