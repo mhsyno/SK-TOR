@@ -14,9 +14,16 @@ current_node_ID, target_ID = args.current_node_ID[0], args.target_ID[0]
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(skt.nodes[current_node_ID])
+    # s.bind(skt.nodes[current_node_ID])
     s.connect(skt.nodes[target_ID])
-    data = bytes(input("Your message: "), encoding='utf-8') #python3 has a new "bytes" data type
-    s.send(data)
+    message = input("Your message: ") #python3 has a new "bytes" data type
+    prepared_trajectory = skt.prep_trajectory(skt.n)
+    print(prepared_trajectory)
+    encoded_trajectory = skt.encode_trajectory(prepared_trajectory, message,
+        target_ID, current_node_ID)
+    print(encoded_trajectory)
+
+    trajectory_as_bytes = bytes(encoded_trajectory, encoding='utf-8')
+    s.send(trajectory_as_bytes)
     data = str(s.recv(1000), 'utf-8')
     print("CLIENT: Recieved {} bytes:\n=====\n{}\n=====".format(len(data), data))
