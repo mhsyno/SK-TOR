@@ -13,6 +13,12 @@ args = parser.parse_args()
 current_node_ID, target_ID = args.current_node_ID[0], args.target_ID[0]
 
 users_name = input("Type in your name: ")
+
+for key in skt.nodes:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    users_name_as_bytes = bytes(users_name, encoding='utf-8')
+    s.send(users_name_as_bytes)
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # s.bind(skt.nodes[current_node_ID])
