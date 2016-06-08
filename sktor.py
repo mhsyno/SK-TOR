@@ -37,7 +37,8 @@ def encode_trajectory(trajectory, message, target, sender):
     n = len(trajectory)
     for i in range(n):
         lista = [trajectory[n-1-i], lista]
-    return json.dumps(lista)
+    target, lista = lista
+    return target, json.dumps(lista) 
 
 def send(ip, string_message):
     """TODO: socket"""

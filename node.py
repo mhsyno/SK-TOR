@@ -59,6 +59,8 @@ def receiver(connection, address, s):
     if "ADD_USER" in received_string:
         username = received_string[len("ADD_USER"):]
         print("Nowy użytkownik!", origin_ip, username)
+        if username in users:
+            users[username] = origin_ip
     else:
         received_list = json.loads(received_string)
         if len(received_list) == 1:
@@ -69,16 +71,19 @@ def receiver(connection, address, s):
         elif len(received_list) == 2:
             udp_target, paczka = received_list
             paczka = json.dumps(paczka)
-            print("Wysyłam {} do {}".format(paczka, skt.nodes[udp_target]))
+            print("Wysyłam {} do node {}: {}".format(paczka, udp_target, skt.nodes[udp_target]))
             skt.send(skt.nodes[udp_target], paczka)
             print("Czekam")
-            received_ack_message, ack_ip = skt.receive(*(skt.nodes[udp_target]))
-            print("Dostałem {} do {}".format(received_ack_message, ack_ip))
-
+            conn_after_wait = s.accept()
+            received_ack_message, ack_ip = skt.receive(*conn_after_wait)
+            print("Dostałem {} od {}".format(received_ack_message, ack_ip))
+    print("Wątek zakończony.")
+    return
 
 s.listen(1)
 while True:
     # pętla która przyjmuje połączenia i zaraz je przesyła do innego wątku
+    print("iteracja pętli!")
     connection, address = s.accept()
     p = multiprocessing.Process(target=receiver,
                                 args=(connection, address, s))
