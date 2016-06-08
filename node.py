@@ -61,7 +61,7 @@ def receiver(connection, address, s):
         print("Nowy użytkownik!", origin_ip, username)
     else:
         received_list = json.loads(received_string)
-        if len(received_list) == 2:
+        if len(received_list) == 1:
             wiadomosc = received_list[0]
             print("Wiadomość z IP {}, oryginalnie od {}".format(origin_ip, "nie wiemy kto"))
             print(wiadomosc)
