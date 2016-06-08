@@ -42,19 +42,19 @@ def encode_trajectory(trajectory, message, target, sender):
 def send(ip, string_message):
     """TODO: socket"""
     pass
-def receive(s):
-    connection, address = s.accept()
+
+def receive(connection, address):
     print("Accepted connection from {}".format(address))
     print(5*"=")
-    encoded_list = ""
+    received_data = ""
     while 1:
         data = connection.recv(1000)
         if not data: break
         received_data_part = str(data, 'utf-8')
-        print(received_data_part)
-        encoded_list = encoded_list + received_data_part
+        received_data = received_data + received_data_part
         connection.sendall(data)
     connection.close()
+    print(received_data)
     print(5*"=")
     origin_ip = address #from socket
-    return encoded_list, origin_ip
+    return received_data, origin_ip

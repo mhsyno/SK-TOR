@@ -40,8 +40,11 @@ def pass_along(encoded_list):
         print(wiadomosc)
         skt.send(origin_ip, skt.ACKNOWLEDGED)
         #commit seppuku
-if __name__ == "__main__":
-    s.listen(1)
-    while True:
-        print(skt.receive(s))
-    s.close()
+
+s.listen(1)
+while True:
+    # pętla która przyjmuje połączenia
+    # zaraz je przesyła
+    connection, address = s.accept()
+    print(skt.receive(connection, address))
+s.close()
