@@ -46,15 +46,15 @@ def send(ip, string_message):
 def receive(connection, address):
     print("Accepted connection from {}".format(address))
     print(5*"=")
-    received_data = ""
+    received_string = ""
     while 1:
         data = connection.recv(1000)
         if not data: break
-        received_data_part = str(data, 'utf-8')
-        received_data = received_data + received_data_part
+        received_string_part = str(data, 'utf-8')
+        received_string = received_string + received_string_part
         connection.sendall(data)
     connection.close()
-    print(received_data)
+    print(received_string)
     print(5*"=")
     origin_ip = address #from socket
-    return received_data, origin_ip
+    return received_string, origin_ip
