@@ -3,8 +3,8 @@ import socket
 import argparse
 import sktor as skt
 import multiprocessing
-import time
 import os
+import time
 
 parser = argparse.ArgumentParser(description='Lorem ipsum!')
 parser.add_argument('current_node_ID', type=int, nargs='+',
@@ -12,40 +12,13 @@ parser.add_argument('current_node_ID', type=int, nargs='+',
 args = parser.parse_args()
 current_node_ID,  = args.current_node_ID
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(skt.nodes[current_node_ID])
+s.settimeout(99999)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 print("Listening on {}".format(skt.nodes[current_node_ID]))
 
 users = {}
-
-def pass_along(encoded_list):
-    """
-        main node\endpoint behavior
-        if length of list is 2, list contains
-                * IP of next node
-                * list of next steps (to be sent)
-            encodes list with json and sends ahead
-            then waits for reply and sends message back
-        else if length of list is 1, list is message
-            print message
-            send "acknowledge" to last sender
-            kill this process
-    """
-    #wait
-    encoded_list, origin_ip = skt.receive(s)
-    received = json.loads(encoded_list)
-    if len(received) == 2:
-        udp_target, paczka = received
-        paczka = json.dumps(paczka)
-        skt.send(skt.nodes[udp_target], paczka)
-        #wait #może wieloprocesowo
-    elif len(received) == 1:
-        wiadomosc = received
-        print(wiadomosc)
-        skt.send(origin_ip, skt.ACKNOWLEDGED)
-        #commit seppuku
-
 
 def info(title):
     print(title)
@@ -54,39 +27,38 @@ def info(title):
     print('process id:', os.getpid())
 
 
-def receiver(connection, address, s):
-    received_string, origin_ip = (skt.receive(connection, address))
-    if "ADD_USER" in received_string:
-        username = received_string[len("ADD_USER"):]
-        print("Nowy użytkownik!", origin_ip, username)
-        if username in users:
+def node_persistent_behavior(s):
+    last_origin_ip = 0
+    while True:
+        try:
+            received_string, origin_ip = skt.receive(s)
+            print("String: {}".format(received_string))
+        except:
+            continue
+        if "ADD_USER" in received_string:
+            username = received_string[len("ADD_USER"):]
+            if username not in users:
+                print("Nowy użytkownik!", origin_ip, username)
             users[username] = origin_ip
-    else:
-        received_list = json.loads(received_string)
-        if len(received_list) == 1:
-            wiadomosc = received_list[0]
-            print("Wiadomość z IP {}, oryginalnie od {}".format(origin_ip, "nie wiemy kto"))
-            print(wiadomosc)
-            skt.send(origin_ip, skt.ACKNOWLEDGED)
-        elif len(received_list) == 2:
+        elif skt.ACKNOWLEDGED == received_string:
+            print("Dostałem ACK od {}".format(origin_ip))
+        else:
+            received_list = json.loads(received_string)
+
             udp_target, paczka = received_list
             paczka = json.dumps(paczka)
-            print("Wysyłam {} do node {}: {}".format(paczka, udp_target, skt.nodes[udp_target]))
-            skt.send(skt.nodes[udp_target], paczka)
-            print("Czekam")
-            conn_after_wait = s.accept()
-            received_ack_message, ack_ip = skt.receive(*conn_after_wait)
-            print("Dostałem {} od {}".format(received_ack_message, ack_ip))
-    print("Wątek zakończony.")
-    return
+            if udp_target not in skt.nodes:
+                if udp_target in users:
+                    target = users[udp_target]
+            else:
+                target = skt.nodes[udp_target]
+                print("Wysyłam {} do {}: {}".format(paczka, udp_target, target))
+                skt.send(s, paczka, target)
 
-s.listen(1)
-while True:
-    # pętla która przyjmuje połączenia i zaraz je przesyła do innego wątku
-    print("iteracja pętli!")
-    connection, address = s.accept()
-    p = multiprocessing.Process(target=receiver,
-                                args=(connection, address, s))
-    p.start()
-    # p.join()
+
+
+while(True):
+    node_persistent_behavior(s)
+    # p = multiprocessing.Process(target=node_persistent_behavior, args=(s,))
+    # p.start()
 s.close()

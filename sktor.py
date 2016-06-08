@@ -1,11 +1,11 @@
 import json
-from random import randint
+import random
 # import socket
 # import multiprocessing
 # import argparse
 
-nodes = {0: ("192.168.1.12", 8006),
-         1: ("192.168.1.12", 8002),
+nodes = {0: ("192.168.1.12", 8002),
+         1: ("192.168.1.12", 8006),
          2: ("192.168.1.12", 8010),
         #  3: ("192.168.1.17", 5005),
          }
@@ -13,49 +13,27 @@ nodes = {0: ("192.168.1.12", 8006),
 # czy to czasami nie wymaga zmodyfikowania prep_trajectory zeby bralo jedynie elementy z nodes.keys
 
 N = len(nodes)
-n = 3
 ACKNOWLEDGED = "HADHGFHGFHSETYRSHTDHGSUDGHGUHSEYGHERGAHGEAT"
 
-def prep_trajectory(n):
-    """return trajectory as randomized ordered list of nodes to be traversed in TOR packet cycle.
-    nodes do not lead directly to the same node
-
-    n: length of trajectory
-    """
-    trajectory = [randint(0,N-1) for i in range(n)]
-    for i in range(n):
-        while trajectory[i] == trajectory[i-1]:
-            trajectory[i] = randint(0,N-1)
-    return trajectory
-
-def encode_trajectory(trajectory, message, target, sender):
+def prep_trajectory(message, target, sender):
     """ takes trajectory list (use prep_trajectory) and string message
 
     returns trajectory and message as nested list in JSON string form
     """
-    lista = [target, message] #OSTATNI MUSI ZAWIERAĆ ADRES DOCELOWEGO ODBIORCY
-    n = len(trajectory)
-    for i in range(n):
-        lista = [trajectory[n-1-i], lista]
+    trajectory = list(nodes.keys())
+    random.shuffle(trajectory)
+
+    lista = [target, [message]] #OSTATNI MUSI ZAWIERAĆ NAZWĘ
+    for node in trajectory:
+        lista = [node, lista]
     target, lista = lista
-    return target, json.dumps(lista) 
+    return target, json.dumps(lista)
 
-def send(ip, string_message):
-    """TODO: socket"""
-    pass
+def send(sock, string_message, ip_port):
+    bytes_message = bytes(string_message, encoding='utf-8')
+    sock.sendto(bytes_message, ip_port)
 
-def receive(connection, address):
-    print("Accepted connection from {}".format(address))
-    print(5*"=")
-    received_string = ""
-    while 1:
-        data = connection.recv(1000)
-        if not data: break
-        received_string_part = str(data, 'utf-8')
-        received_string = received_string + received_string_part
-        connection.sendall(data)
-    connection.close()
-    print(received_string)
-    print(5*"=")
-    origin_ip = address #from socket
+def receive(sock):
+    data, origin_ip = sock.recvfrom(1000)
+    received_string= str(data, 'utf-8')
     return received_string, origin_ip
