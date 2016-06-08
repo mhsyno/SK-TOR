@@ -12,6 +12,7 @@ parser.add_argument('target_ID', type=int, nargs='+',
 args = parser.parse_args()
 current_node_ID, target_ID = args.current_node_ID[0], args.target_ID[0]
 
+users_name = input("Type in your name: ")
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # s.bind(skt.nodes[current_node_ID])
