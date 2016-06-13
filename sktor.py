@@ -3,12 +3,8 @@ import random
 # import socket
 # import multiprocessing
 # import argparse
+from data import nodes
 
-nodes = {0: ("192.168.1.12", 8002),
-         1: ("192.168.1.12", 8006),
-         2: ("192.168.1.12", 8010),
-        #  3: ("192.168.1.17", 5005),
-         }
 # nodes.pop(nodes[socket.get]) #zastanowic sie czy warto usuwac biezacy node z listy nodes powyzej
 # czy to czasami nie wymaga zmodyfikowania prep_trajectory zeby bralo jedynie elementy z nodes.keys
 
