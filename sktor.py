@@ -11,6 +11,7 @@ from data import nodes
 N = len(nodes)
 ACKNOWLEDGED = "ACKNOWLEDGED"
 LIST_USERS = "LIST_USERS"
+SEND_FAIL = "SEND_FAIL"
 def prep_trajectory(message, target, sender):
     """ takes trajectory list (use prep_trajectory) and string message
 
