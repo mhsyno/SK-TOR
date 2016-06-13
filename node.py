@@ -30,11 +30,8 @@ def info(title):
 def node_persistent_behavior(s):
     last_origin_ip = 0
     while True:
-        try:
-            received_string, origin_ip = skt.receive(s)
-            print("String: {}".format(received_string))
-        except:
-            continue
+        received_string, origin_ip = skt.receive(s)
+        print("String: {}".format(received_string))
         if "ADD_USER" in received_string:
             username = received_string[len("ADD_USER"):]
             if username not in users:
@@ -47,13 +44,12 @@ def node_persistent_behavior(s):
 
             udp_target, paczka = received_list
             paczka = json.dumps(paczka)
-            if udp_target not in skt.nodes:
-                if udp_target in users:
-                    target = users[udp_target]
+            if udp_target not in skt.nodes and udp_target in users:
+                target = users[udp_target]
             else:
                 target = skt.nodes[udp_target]
-                print("Wysyłam {} do {}: {}".format(paczka, udp_target, target))
-                skt.send(s, paczka, target)
+            print("Wysyłam {} do {}: {}".format(paczka, udp_target, target))
+            skt.send(s, paczka, target)
 
 
 

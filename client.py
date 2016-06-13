@@ -18,14 +18,11 @@ import json
 
 users_name = input("Type in your name: ")
 def listen(s):
-    s.settimeout(5)
     while True:
-        try:
-            data, origin_ip = skt.receive(s)
-            print("\nCLIENT: Recieved {} bytes:\n=====\n{}\n=====".format(len(data), data))
-            skt.send(s, skt.ACKNOWLEDGED, origin_ip)
-        except:
-            pass
+        data, origin_ip = skt.receive(s)
+        print("\nCLIENT: Recieved {} bytes:\n=====\n{}\n=====".format(len(data), data))
+        skt.send(s, skt.ACKNOWLEDGED, origin_ip)
+
 
 def send(s):
     while True:
@@ -39,14 +36,10 @@ def send(s):
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-    s.settimeout(99999)
-    have_printed_user_list = False
+    s.settimeout(9999999)
     for key in skt.nodes:
         users_name_as_bytes = bytes("ADD_USER" + users_name, encoding='utf-8')
         s.sendto(users_name_as_bytes, skt.nodes[key])
-        if not have_printed_user_list:
-            have_printed_user_list = True
-            # TODO: sieć odsyła listę użytkowników
 
 
 
