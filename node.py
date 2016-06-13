@@ -48,19 +48,28 @@ def node_persistent_behavior(s):
 
         elif skt.ACKNOWLEDGED == received_string:
             print("Dostałem ACK od {}".format(origin_ip))
+            # import ipdb; ipdb.set_trace()
             skt.send(s, skt.ACKNOWLEDGED, WAITING_FOR_ACK_IP)
+        elif skt.SEND_FAIL == received_string:
+            print("Dostałem SEND_FAIL od {}".format(origin_ip))
+            skt.send(s, skt.SEND_FAIL, WAITING_FOR_ACK_IP)
         else:
             received_list = json.loads(received_string)
 
-            udp_target, paczka = received_list
+            target_username, paczka = received_list
             paczka = json.dumps(paczka)
-            if udp_target not in skt.nodes and udp_target in users:
-                target = users[udp_target]
+            if target_username not in skt.nodes and target_username in users:
+                target = users[target_username]
             else:
-                target = skt.nodes[udp_target]
-            print("Wysyłam {} do {}: {}".format(paczka, udp_target, target))
+                try:
+                    target = skt.nodes[target_username]
+                except KeyError:
+                    target = origin_ip
+                    paczka = skt.SEND_FAIL
+                    target_username = "poprzedni uzytkownik"
+            print("Wysyłam {} do {}: {}".format(paczka, target_username, target))
             skt.send(s, paczka, target)
-            WAITING_FOR_ACK_IP = udp_target
+            WAITING_FOR_ACK_IP = origin_ip
 
 
 
