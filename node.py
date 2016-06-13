@@ -39,7 +39,7 @@ def node_persistent_behavior(s):
             users[username] = origin_ip
 
             if current_node_ID == 0:
-                duzy_string = "Obecni userzy:\n"
+                duzy_string = skt.LIST_USERS + "\n"
                 for username in users:
                     duzy_string = duzy_string + username + "\n"
 
