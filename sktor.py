@@ -4,9 +4,9 @@ from random import randint
 # import multiprocessing
 # import argparse
 
-nodes = {0: ("192.168.1.12", 8006),
-         1: ("192.168.1.12", 8002),
-         2: ("192.168.1.12", 8010),
+nodes = {0: ("192.168.0.11", 8006),
+         1: ("192.168.0.11", 8002),
+         2: ("192.168.0.11", 8010),
         #  3: ("192.168.1.17", 5005),
          }
 # nodes.pop(nodes[socket.get]) #zastanowic sie czy warto usuwac biezacy node z listy nodes powyzej
@@ -15,6 +15,7 @@ nodes = {0: ("192.168.1.12", 8006),
 N = len(nodes)
 n = 3
 ACKNOWLEDGED = "HADHGFHGFHSETYRSHTDHGSUDGHGUHSEYGHERGAHGEAT"
+add_client = "ADD_CLIENT"
 
 def prep_trajectory(n):
     """return trajectory as randomized ordered list of nodes to be traversed in TOR packet cycle.

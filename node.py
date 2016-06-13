@@ -2,6 +2,7 @@ import json
 import socket
 import argparse
 import sktor as skt
+import types
 
 parser = argparse.ArgumentParser(description='Lorem ipsum!')
 parser.add_argument('current_node_ID', type=int, nargs='+',
@@ -13,6 +14,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind(skt.nodes[current_node_ID])
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 print("Listening on {}".format(skt.nodes[current_node_ID]))
+
+clients_list = {}
 
 def pass_along(encoded_list):
     """
@@ -30,16 +33,22 @@ def pass_along(encoded_list):
     #wait
     encoded_list, origin_ip = skt.receive(s)
     received = json.loads(encoded_list)
-    if len(received) == 2:
-        udp_target, paczka = received
-        paczka = json.dumps(paczka)
-        skt.send(skt.nodes[udp_target], paczka)
-        #wait #może wieloprocesowo
-    elif len(received) == 1:
-        wiadomosc = received
-        print(wiadomosc)
-        skt.send(origin_ip, skt.ACKNOWLEDGED)
-        #commit seppuku
+
+    if type(received) is str:
+        if received.startswith('ADD_CLIENT'):
+            clients_list[received[:10]] = origin_ip
+            print(clients_list)
+    else:
+        if len(received) == 2:
+            udp_target, paczka = received
+            paczka = json.dumps(paczka)
+            skt.send(skt.nodes[udp_target], paczka)
+            #wait #może wieloprocesowo
+        elif len(received) == 1:
+            wiadomosc = received
+            print(wiadomosc)
+            skt.send(origin_ip, skt.ACKNOWLEDGED)
+            #commit seppuku
 
 s.listen(1)
 while True:
