@@ -26,9 +26,9 @@ def info(title):
     print('parent process:', os.getppid())
     print('process id:', os.getpid())
 
-
+WAITING_FOR_ACK_IP = None
 def node_persistent_behavior(s):
-    last_origin_ip = 0
+    global WAITING_FOR_ACK_IP
     while True:
         received_string, origin_ip = skt.receive(s)
         print("String: {}".format(received_string))
@@ -39,6 +39,7 @@ def node_persistent_behavior(s):
             users[username] = origin_ip
         elif skt.ACKNOWLEDGED == received_string:
             print("Dostałem ACK od {}".format(origin_ip))
+            skt.send(s, skt.ACKNOWLEDGED, WAITING_FOR_ACK_IP)
         else:
             received_list = json.loads(received_string)
 
@@ -50,6 +51,7 @@ def node_persistent_behavior(s):
                 target = skt.nodes[udp_target]
             print("Wysyłam {} do {}: {}".format(paczka, udp_target, target))
             skt.send(s, paczka, target)
+            WAITING_FOR_ACK_IP = udp_target
 
 
 
