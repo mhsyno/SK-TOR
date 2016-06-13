@@ -40,6 +40,15 @@ def node_persistent_behavior(s):
             if username not in users:
                 print("Nowy użytkownik!", origin_ip, username)
             users[username] = origin_ip
+
+            if current_node_ID == 0:
+                duzy_string = "Obecni userzy:\n"
+                for username in users:
+                    duzy_string = duzy_string + username + "\n"
+
+                for username in users:
+                    skt.send(s, duzy_string, users[username])
+
         elif skt.ACKNOWLEDGED == received_string:
             print("Dostałem ACK od {}".format(origin_ip))
         else:
