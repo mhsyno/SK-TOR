@@ -13,7 +13,7 @@ nodes = {0: ("192.168.1.12", 8002),
 # czy to czasami nie wymaga zmodyfikowania prep_trajectory zeby bralo jedynie elementy z nodes.keys
 
 N = len(nodes)
-ACKNOWLEDGED = "HADHGFHGFHSETYRSHTDHGSUDGHGUHSEYGHERGAHGEAT"
+ACKNOWLEDGED = "ACKNOWLEDGED"
 
 def prep_trajectory(message, target, sender):
     """ takes trajectory list (use prep_trajectory) and string message

@@ -17,14 +17,26 @@ import json
 # users_name, target, message = args.this_ID[0], args.target_ID[0], args.message[0]
 
 users_name = input("Type in your name: ")
+
+WAITING_FOR_ACK = False
+WAITING_FOR_ACK_MESSAGE = ""
 def listen(s):
+    global WAITING_FOR_ACK, WAITING_FOR_ACK_MESSAGE
     while True:
         data, origin_ip = skt.receive(s)
-        print("\nCLIENT: Recieved {} bytes:\n=====\n{}\n=====".format(len(data), data))
-        skt.send(s, skt.ACKNOWLEDGED, origin_ip)
+        if data.startswith(skt.LIST_USERS):
+            print("CURRENT USERS:\n" + data[len(skt.LIST_USERS):])
+        elif WAITING_FOR_ACK and data.startswith(skt.ACKNOWLEDGED):
+            print("Received acknowledgment for message: {}".format(WAITING_FOR_ACK_MESSAGE))
+            WAITING_FOR_ACK = False
+            WAITING_FOR_ACK_MESSAGE = False
+        else:
+            print("\nCLIENT: Recieved {} bytes:\n=====\n{}\n=====".format(len(data), data))
+            skt.send(s, skt.ACKNOWLEDGED, origin_ip)
 
 
 def send(s):
+    global WAITING_FOR_ACK, WAITING_FOR_ACK_MESSAGE
     while True:
         target = input("Message recipient: ")
         message = input("Your message: ") #python3 has a new "bytes" data type
@@ -33,6 +45,10 @@ def send(s):
         target, trajectory = skt.prep_trajectory(message, target, users_name)
         # print(target, skt.nodes[target], trajectory)
         skt.send(s, trajectory, skt.nodes[target])
+        WAITING_FOR_ACK = True
+        WAITING_FOR_ACK_MESSAGE = message
+
+        # musi czekać na
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
