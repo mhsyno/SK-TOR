@@ -14,7 +14,7 @@ nodes = {0: ("192.168.1.12", 8002),
 
 N = len(nodes)
 ACKNOWLEDGED = "ACKNOWLEDGED"
-
+LIST_USERS = "LIST_USERS"
 def prep_trajectory(message, target, sender):
     """ takes trajectory list (use prep_trajectory) and string message
 
